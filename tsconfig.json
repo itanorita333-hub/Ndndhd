@@ -1,0 +1,20 @@
+{
+  // Removed extends to avoid referencing a missing base config
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "preserve",
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler",
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@workspace/api-client-react": ["./src/lib/api-client-react.ts"]
+    }
+  },
+  // Removed project references that point to missing paths
+  "references": []
+}
