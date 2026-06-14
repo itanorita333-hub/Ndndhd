@@ -210,16 +210,6 @@ function AppSidebar() {
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
 
-                  {/* Total machines needing refill badge */}
-                  {machines && (() => {
-                    const total = machines.filter((m) => needsRefill(m.lastRefillAt)).length;
-                    return total > 0 ? (
-                      <SidebarMenuBadge className="bg-destructive text-destructive-foreground rounded-full px-1.5 text-[10px] font-bold">
-                        {total}
-                      </SidebarMenuBadge>
-                    ) : null;
-                  })()}
-
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       <SidebarMenuSubItem>
@@ -245,11 +235,6 @@ function AppSidebar() {
                             <SidebarMenuSubButton asChild isActive={isActive}>
                               <Link href={href}>
                                 <span className="truncate">{routeName}</span>
-                                {refillCount > 0 && (
-                                  <span className="ml-auto shrink-0 rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold leading-none text-destructive-foreground">
-                                    {refillCount}
-                                  </span>
-                                )}
                               </Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
