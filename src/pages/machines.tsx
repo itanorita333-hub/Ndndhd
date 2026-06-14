@@ -41,7 +41,7 @@ export default function MachinesList() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="text-xl font-bold tracking-tight text-foreground">
           Refill Service
         </h1>
         <p className="text-muted-foreground mt-1">

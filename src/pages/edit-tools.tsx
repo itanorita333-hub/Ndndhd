@@ -8,7 +8,7 @@ export default function EditTools() {
     <div className="space-y-6 p-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Tools</h1>
+          <h1 className="text-xl font-bold tracking-tight">Edit Tools</h1>
           <p className="text-sm text-muted-foreground">View and configure tools for edit mode workflows.</p>
         </div>
         <div className="rounded-full border border-border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
