@@ -1,9 +1,15 @@
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle2, Server, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+const SAMPLE_ITEMS = [
+  { id: "A01", name: "Energy Bar", stock: 42, status: "In stock" },
+  { id: "B12", name: "Bottled Water", stock: 18, status: "Low stock" },
+  { id: "C07", name: "Soda Can", stock: 0, status: "Out of stock" },
+];
 
 export default function Dashboard() {
   const { data: summary, isLoading, error } = useGetDashboardSummary({
@@ -106,7 +112,13 @@ export default function Dashboard() {
           <CardContent>
             {summary.recentRefills && summary.recentRefills.length > 0 ? (
               <div className="space-y-4">
-                {summary.recentRefills.map((refill) => (
+                {summary.recentRefills.map((refill: {
+                  id: string;
+                  machineId: string;
+                  refillerName?: string | null;
+                  startTime: string;
+                  status: string;
+                }) => (
                   <div key={refill.id} className="flex items-center justify-between">
                     <div className="space-y-1">
                       <p className="text-sm font-medium leading-none">
@@ -130,25 +142,23 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Status Breakdown</CardTitle>
+            <CardTitle>Sample Item List</CardTitle>
           </CardHeader>
           <CardContent>
-            {summary.machineStatusBreakdown && summary.machineStatusBreakdown.length > 0 ? (
-              <div className="space-y-4">
-                {summary.machineStatusBreakdown.map((stat) => (
-                  <div key={stat.status} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="capitalize">
-                        {stat.status}
-                      </Badge>
-                    </div>
-                    <div className="font-medium">{stat.count}</div>
+            <div className="space-y-3">
+              {SAMPLE_ITEMS.map((item) => (
+                <div key={item.id} className="flex items-center justify-between rounded-xl border px-4 py-3">
+                  <div>
+                    <p className="text-sm font-semibold">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">ID: {item.id}</p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground py-4">No status data available.</p>
-            )}
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{item.stock} pcs</p>
+                    <p className="text-xs text-muted-foreground">{item.status}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>

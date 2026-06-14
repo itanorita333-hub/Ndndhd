@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard,
@@ -11,6 +12,7 @@ import {
   Moon,
   Route,
   ChevronRight,
+  Edit3,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import {
@@ -34,6 +36,12 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
@@ -83,6 +91,7 @@ function ThemeToggle() {
 
 function AppSidebar() {
   const [location] = useLocation();
+  const [sidebarMode, setSidebarMode] = useState<"view" | "edit">("view");
   const { data: machines } = useListMachines();
 
   const activeMachineId = MACHINE_SECTIONS.reduce<string | null>((found, s) => {
@@ -116,21 +125,52 @@ function AppSidebar() {
     <Sidebar collapsible="offcanvas">
       {/* Header / Logo */}
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Activity className="size-4" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold text-sm">FM Vending</span>
-                  <span className="text-xs text-muted-foreground">Management</span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg" asChild>
+                  <Link href="/">
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                      <Activity className="size-4" />
+                    </div>
+                    <div className="flex flex-col gap-0.5 leading-none">
+                      <span className="font-semibold text-sm">FM Vending</span>
+                      <span className="text-xs text-muted-foreground">Management</span>
+                    </div>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    tooltip="Sidebar mode"
+                    className="rounded-full p-2 text-muted-foreground hover:bg-transparent border-none bg-transparent shadow-none"
+                  >
+                    <ChevronsUpDown className="size-4" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-44">
+                  <DropdownMenuItem onSelect={() => setSidebarMode("view")}>View Mode</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => setSidebarMode("edit")}>Edit Mode</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {sidebarMode === "edit" ? (
+            <div className="rounded-md border border-border bg-muted p-3 text-sm text-muted-foreground">
+              Edit mode enabled. The sidebar will switch to edit tools once configured.
+            </div>
+          ) : (
+            <div className="rounded-md border border-border bg-background p-3 text-sm text-muted-foreground">
+              View mode is active. Switch to edit mode to show editor-specific navigation.
+            </div>
+          )}
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
@@ -182,6 +222,16 @@ function AppSidebar() {
 
                   <CollapsibleContent>
                     <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={location === "/machines" || location.startsWith("/machines?")}
+                        >
+                          <Link href="/machines">
+                            <span>All machines</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
                       {routeNames.map((routeName) => {
                         const routeMachines = routeGroups[routeName];
                         const refillCount = routeMachines.filter((m) =>

@@ -12,6 +12,8 @@ import RefillService from "@/pages/refill-service";
 import StockTake from "@/pages/stock-take";
 import TemperatureLog from "@/pages/temperature-log";
 import WastageReport from "@/pages/wastage";
+import EditSidebar from "@/pages/edit-sidebar";
+import EditTools from "@/pages/edit-tools";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ function Router() {
         <Route path="/stock-take/:machineId" component={StockTake} />
         <Route path="/temperature-log/:machineId" component={TemperatureLog} />
         <Route path="/wastage/:machineId" component={WastageReport} />
+        <Route path="/edit-sidebar" component={EditSidebar} />
+        <Route path="/edit-tools" component={EditTools} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

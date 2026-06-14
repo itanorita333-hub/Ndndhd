@@ -2,7 +2,6 @@ import { useGetMachine, getGetMachineQueryKey, useListMachineSlots, getListMachi
 import { useParams } from "wouter";
 import { MachineSelector } from "@/components/machine-selector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { MachineTabs } from "@/components/machine-tabs";
@@ -61,7 +60,9 @@ export default function StockTake() {
                         {slot.currentInventory} / {slot.capacity}
                       </span>
                     </div>
-                    <Progress value={fillPercentage} indicatorClassName={colorClass} className="h-2" />
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div className={`${colorClass} h-full`} style={{ width: `${fillPercentage}%` }} />
+                    </div>
                   </div>
                 );
               })}

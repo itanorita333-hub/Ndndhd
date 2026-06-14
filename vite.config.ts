@@ -44,6 +44,28 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Improve chunking to avoid very large bundles
+    chunkSizeWarningLimit: 500,
+    target: "es2020",
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('@vitejs')) {
+              return 'vendor-react';
+            }
+            if (id.includes('lucide-react') || id.includes('recharts') || id.includes('framer-motion') || id.includes('embla-carousel-react')) {
+              return 'vendor-ui';
+            }
+            if (id.includes('@tanstack') || id.includes('zod') || id.includes('date-fns')) {
+              return 'vendor-utils';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    }
   },
   server: {
     port,
