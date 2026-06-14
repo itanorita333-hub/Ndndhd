@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Link, useSearch } from "wouter";
 import { format } from "date-fns";
-import { MapPin, Box, AlertCircle, CheckCircle2, Route } from "lucide-react";
+import { MapPin, Box, AlertCircle, CheckCircle2, Route, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 function needsRefill(lastRefillAt: string | null | undefined): boolean {
   if (!lastRefillAt) return true;
@@ -19,16 +21,31 @@ export default function MachinesList() {
   const search = useSearch();
   const params = new URLSearchParams(search);
   const activeRoute = params.get("route");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Group all machines by route
-  const routeGroups = machines
-    ? machines.reduce<Record<string, typeof machines>>((acc, m) => {
-        const r = m.route ?? "Unassigned";
-        if (!acc[r]) acc[r] = [];
-        acc[r].push(m);
-        return acc;
-      }, {})
-    : {};
+  // Filter machines by search query
+  const filteredMachines = machines
+    ? machines.filter((m) => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase();
+        return (
+          m.name?.toLowerCase().includes(q) ||
+          m.id?.toLowerCase().includes(q) ||
+          m.location?.toLowerCase().includes(q)
+        );
+      })
+    : [];
+
+  // Group filtered machines by route
+  const routeGroups = filteredMachines.reduce<Record<string, typeof filteredMachines>>(
+    (acc, m) => {
+      const r = m.route ?? "Unassigned";
+      if (!acc[r]) acc[r] = [];
+      acc[r].push(m);
+      return acc;
+    },
+    {}
+  );
 
   const routeNames = Object.keys(routeGroups).sort();
 
@@ -38,17 +55,38 @@ export default function MachinesList() {
     : routeNames;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
-          Refill Service
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          {activeRoute
-            ? `Showing machines in ${activeRoute}`
-            : "All routes — select a route from the sidebar to filter"}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
+            Refill Service
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {activeRoute
+              ? `Showing machines in ${activeRoute}`
+              : "All routes — select a route from the sidebar to filter"}
+          </p>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Search by name or location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="size-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Route tabs (only when not filtered) */}
@@ -207,7 +245,23 @@ export default function MachinesList() {
 
           {visibleRoutes.length === 0 && (
             <div className="text-center py-16 bg-card rounded-lg border border-dashed">
-              <p className="text-muted-foreground">No routes found.</p>
+              {searchQuery ? (
+                <>
+                  <Search className="mx-auto size-8 text-muted-foreground mb-3" />
+                  <p className="font-medium">No machines found</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    No results for "{searchQuery}". Try a different name or location.
+                  </p>
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="mt-3 text-sm text-primary hover:underline"
+                  >
+                    Clear search
+                  </button>
+                </>
+              ) : (
+                <p className="text-muted-foreground">No routes found.</p>
+              )}
             </div>
           )}
         </div>
