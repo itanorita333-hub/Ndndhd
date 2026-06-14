@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutDashboard,
   Truck,
@@ -297,22 +298,9 @@ function AppSidebar() {
                             tooltip={`${machine.id} — ${machine.location}`}
                           >
                             <Link href={href}>
-                              <span
-                                className={cn(
-                                  "flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-bold",
-                                  machine.status === "active"
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : machine.status === "maintenance"
-                                    ? "bg-amber-100 text-amber-700"
-                                    : "bg-muted text-muted-foreground"
-                                )}
-                              >
-                                {machine.id.slice(-3)}
+                              <span className="truncate text-sm font-medium">
+                                {machine.id} - {machine.location}
                               </span>
-                              <div className="flex flex-col leading-none min-w-0">
-                                <span className="truncate text-sm font-medium">{machine.id}</span>
-                                <span className="truncate text-xs text-muted-foreground">{machine.location}</span>
-                              </div>
                             </Link>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -377,7 +365,7 @@ function PageHeader() {
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur-sm">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumb>
@@ -415,13 +403,27 @@ function SidebarBackdrop() {
 }
 
 export function Layout({ children }: LayoutProps) {
+  const [location] = useLocation();
   return (
     <SidebarProvider defaultOpen={false}>
       <AppSidebar />
       <SidebarBackdrop />
       <SidebarInset>
         <PageHeader />
-        <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full h-full"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

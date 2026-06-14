@@ -69,6 +69,7 @@ export default function RefillService() {
   const [elapsedTime, setElapsedTime] = useState<string>("");
   const [slotValues, setSlotValues] = useState<Record<number, SlotFormState>>({});
   const [isPaused, setIsPaused] = useState(false);
+  const [showEmptySlots, setShowEmptySlots] = useState(true);
   const [hasDraft, setHasDraft] = useState(false);
 
   const { data: machine, isLoading: isMachineLoading } = useGetMachine(machineId, {
@@ -278,30 +279,36 @@ export default function RefillService() {
           {/* Restored draft notice */}
           {hasDraft && activeSession && (
             <Alert className="bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950/50 dark:text-blue-200 dark:border-blue-900">
-              <PlayCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <AlertDescription>
-                Previous session data was restored from your saved draft.
-              </AlertDescription>
+              <div className="flex items-start gap-2">
+                <PlayCircle className="mt-0.5 h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="leading-snug">
+                  Previous session data was restored from your saved draft.
+                </AlertDescription>
+              </div>
             </Alert>
           )}
 
           {/* 5-min warning */}
           {activeSession && !isPaused && isTooEarly && (
             <Alert className="bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/50 dark:text-amber-200 dark:border-amber-900">
-              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <AlertDescription>
-                Must spend at least 5 minutes on refill to ensure quality.
-              </AlertDescription>
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertDescription className="leading-snug">
+                  Must spend at least 5 minutes on refill to ensure quality.
+                </AlertDescription>
+              </div>
             </Alert>
           )}
 
           {/* Paused notice */}
           {isPaused && (
             <Alert className="bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/50 dark:text-amber-200 dark:border-amber-900">
-              <Pause className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <AlertDescription>
-                Session is paused. Your data is saved locally for up to 24 hours. Press <strong>Continue</strong> to resume.
-              </AlertDescription>
+              <div className="flex items-start gap-2">
+                <Pause className="mt-0.5 h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertDescription className="leading-snug">
+                  Session is paused. Your data is saved locally for up to 24 hours. Press <strong>Continue</strong> to resume.
+                </AlertDescription>
+              </div>
             </Alert>
           )}
 
@@ -344,30 +351,54 @@ export default function RefillService() {
                         <Input
                           type="number"
                           min="0"
-                          value={slotValues[slot.id]?.stockIn || 0}
+                          value={
+                            inputsDisabled
+                              ? String(slotValues[slot.id]?.stockIn ?? 0)
+                              : slotValues[slot.id]?.stockIn === 0
+                              ? ""
+                              : String(slotValues[slot.id]?.stockIn ?? "")
+                          }
+                          placeholder={inputsDisabled ? "0" : "0"}
                           onChange={(e) => updateSlotValue(slot.id, "stockIn", e.target.value)}
+                          onFocus={() => setShowEmptySlots(false)}
                           disabled={inputsDisabled}
-                          className="h-8 text-center"
+                          className={`h-8 text-center placeholder:text-muted-foreground ${inputsDisabled ? "border border-border" : ""}`}
                         />
                       </TableCell>
                       <TableCell className="text-center">
                         <Input
                           type="number"
                           min="0"
-                          value={slotValues[slot.id]?.overflow || 0}
+                          value={
+                            inputsDisabled
+                              ? String(slotValues[slot.id]?.overflow ?? 0)
+                              : slotValues[slot.id]?.overflow === 0
+                              ? ""
+                              : String(slotValues[slot.id]?.overflow ?? "")
+                          }
+                          placeholder={inputsDisabled ? "0" : "0"}
                           onChange={(e) => updateSlotValue(slot.id, "overflow", e.target.value)}
+                          onFocus={() => setShowEmptySlots(false)}
                           disabled={inputsDisabled}
-                          className="h-8 text-center"
+                          className={`h-8 text-center placeholder:text-muted-foreground ${inputsDisabled ? "border border-border" : ""}`}
                         />
                       </TableCell>
                       <TableCell className="text-center">
                         <Input
                           type="number"
                           min="0"
-                          value={slotValues[slot.id]?.stockOut || 0}
+                          value={
+                            inputsDisabled
+                              ? String(slotValues[slot.id]?.stockOut ?? 0)
+                              : slotValues[slot.id]?.stockOut === 0
+                              ? ""
+                              : String(slotValues[slot.id]?.stockOut ?? "")
+                          }
+                          placeholder={inputsDisabled ? "0" : "0"}
                           onChange={(e) => updateSlotValue(slot.id, "stockOut", e.target.value)}
+                          onFocus={() => setShowEmptySlots(false)}
                           disabled={inputsDisabled}
-                          className="h-8 text-center"
+                          className={`h-8 text-center placeholder:text-muted-foreground ${inputsDisabled ? "border border-border" : ""}`}
                         />
                       </TableCell>
                     </TableRow>
@@ -385,8 +416,10 @@ export default function RefillService() {
 
           {/* Action buttons below table */}
           <div className="flex items-center justify-between pt-2">
-            {/* Left: Pause / Continue */}
-            <div>
+            <div />
+
+            {/* Right: Pause / Continue, Start Refill / Submit Session */}
+            <div className="flex items-center gap-2">
               {activeSession && !isPaused && (
                 <Button variant="outline" onClick={handlePause}>
                   <Pause className="mr-2 h-4 w-4" />
@@ -399,10 +432,6 @@ export default function RefillService() {
                   Continue
                 </Button>
               )}
-            </div>
-
-            {/* Right: Start Refill / Submit Session */}
-            <div>
               {!activeSession && (
                 <Button onClick={handleStartRefill} disabled={startSession.isPending}>
                   <Play className="mr-2 h-4 w-4" />
