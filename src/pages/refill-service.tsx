@@ -220,14 +220,34 @@ export default function RefillService() {
 
   const updateSlotValue = useCallback((slotId: number, field: keyof SlotFormState, value: string) => {
     const numValue = parseInt(value, 10) || 0;
-    setSlotValues(prev => ({
-      ...prev,
-      [slotId]: { ...prev[slotId], [field]: numValue }
-    }));
-  }, []);
+    setSlotValues(prev => {
+      const prevSlot = prev[slotId] ?? { stockIn: 0, overflow: 0, stockOut: 0 };
+      const slotData = slots?.find(s => s.id === slotId);
+
+      // If we don't have slot metadata, fall back to simple set
+      if (!slotData) {
+        return { ...prev, [slotId]: { ...prevSlot, [field]: numValue } };
+      }
+
+      // Auto-calculate overflow when user edits `stockIn`.
+      if (field === "stockIn") {
+        const remainingSpace = Math.max(0, slotData.capacity - slotData.currentInventory);
+        if (numValue <= remainingSpace) {
+          return { ...prev, [slotId]: { ...prevSlot, stockIn: numValue, overflow: 0 } };
+        }
+        const inVal = remainingSpace;
+        const overflowVal = numValue - remainingSpace;
+        return { ...prev, [slotId]: { ...prevSlot, stockIn: inVal, overflow: overflowVal } };
+      }
+
+      // Otherwise just set the requested field
+      return { ...prev, [slotId]: { ...prevSlot, [field]: numValue } };
+    });
+  }, [slots]);
 
   const isLoading = isMachineLoading || isSlotsLoading || isActiveSessionLoading;
   const inputsDisabled = !activeSession || isPaused;
+  const submitDisabled = submitSession.isPending || isTooEarly || isPaused;
 
   if (isLoading) {
     return <div className="p-8 space-y-6"><Skeleton className="h-10 w-full max-w-md" /><Skeleton className="h-64 w-full" /></div>;
@@ -380,7 +400,7 @@ export default function RefillService() {
                           onChange={(e) => updateSlotValue(slot.id, "overflow", e.target.value)}
                           onFocus={() => setShowEmptySlots(false)}
                           disabled={inputsDisabled}
-                          className={`h-8 text-center placeholder:text-muted-foreground ${inputsDisabled ? "border border-border" : ""}`}
+                          className={`h-8 text-center placeholder:text-muted-foreground ${inputsDisabled ? "border border-border" : ""} ${slotValues[slot.id]?.overflow && slotValues[slot.id]?.overflow > 0 ? "text-amber-700 dark:text-amber-400" : ""}`}
                         />
                       </TableCell>
                       <TableCell className="text-center">
@@ -433,19 +453,17 @@ export default function RefillService() {
                 </Button>
               )}
               {!activeSession && (
-                <Button onClick={handleStartRefill} disabled={startSession.isPending}>
-                  <Play className="mr-2 h-4 w-4" />
-                  {startSession.isPending ? "Starting..." : "Start Refill"}
+                <Button onClick={handleStartRefill} disabled={startSession.isPending} className="bg-emerald-700 hover:bg-emerald-800 text-white">
+                  {startSession.isPending ? "Starting..." : "Start"}
                 </Button>
               )}
               {activeSession && (
                 <Button
                   onClick={handleSubmit}
-                  disabled={submitSession.isPending || isTooEarly || isPaused}
-                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50"
+                  disabled={submitDisabled}
+                  className={`${submitDisabled ? "bg-gray-400 text-white cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 text-white"} disabled:opacity-50`}
                 >
-                  <Save className="mr-2 h-4 w-4" />
-                  {submitSession.isPending ? "Submitting..." : "Submit Session"}
+                  {submitSession.isPending ? "Saving..." : "Save"}
                 </Button>
               )}
             </div>
